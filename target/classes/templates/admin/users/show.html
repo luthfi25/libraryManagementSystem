@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>User Management Page</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+
+    <form th:action="@{/logout}" method="get">
+        <button class="btn btn-md btn-danger btn-block" name="registration"
+                type="Submit">Logout
+        </button>
+    </form>
+
+    <div class="panel-group" style="margin-top:40px">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <span th:utext="${userName}"></span>
+            </div>
+            <ul>
+                <li th:each="user, iter : ${users}">
+                    <span th:text="'ID: ' + ${user.id}"></span>
+                    <span th:text="'Username: ' + ${user.username}"></span>
+                    <span th:text="'Password: ' + ${user.password}"></span>
+                    <span th:text="'Name: ' + ${user.name}"></span>
+                    <span th:text="'Role: ' + ${user.role}"></span>
+                    <a th:href="@{/admin/users/update(username=${user.username})}">Update this user</a>
+                    <form th:action="@{/admin/users/delete}" method="post">
+                        <input type="hidden" name="username" th:value="${user.username}"/>
+                        <input type="submit" value="Delete this user"/>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
