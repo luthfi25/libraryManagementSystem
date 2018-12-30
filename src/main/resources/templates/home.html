@@ -24,8 +24,10 @@
                 <span th:utext="${userName}"></span>
             </div>
             <p class="admin-message-text text-center" th:utext="${adminMessage}"></p>
-            <a th:href="@{/admin/users}">Go To User Management</a>
-            <a th:href="@{/admin/users/create}">Go To Create New User</a>
+            <a th:href="@{/admin/users}" th:if="${role == 'ADMIN'}">Go To User Management</a>
+            <a th:href="@{/admin/users/create}" th:if="${role == 'ADMIN'}">Go To Create New User</a>
+            <a th:href="@{/books}">Go To Book Management</a>
+            <a th:href="@{/admin/books/create}" th:if="${role == 'ADMIN'}">Go To Create New Book</a>
         </div>
     </div>
 

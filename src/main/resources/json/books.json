@@ -1,0 +1,22 @@
+[{"id": 1001,
+"name": "Theory on Object Oriented Design",
+"author": "Grady Booch",
+"publisher": "Springer",
+"isbn": "14045-54041",
+"explanation": "This book consists of..."},
+  {
+    "id": 1002,
+    "name": "A Song of Ice and Fire",
+    "author": "George R.R. Martin",
+    "publisher": "Shueisha",
+    "isbn": "14022-22041",
+    "explanation": "A novel about..."
+  },
+  {
+    "id": 1003,
+    "name": "Norwegian Wood",
+    "author": "Haruki Murakami",
+    "publisher": "Kodansha",
+    "isbn": "500600-006005",
+    "explanation": "Outstanding story..."
+  }]

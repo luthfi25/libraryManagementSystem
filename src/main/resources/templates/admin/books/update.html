@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Update Book</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+    <form th:action="@{/}" method="get">
+        <button class="btn btn-md btn-warning btn-block" type="Submit">Go To Login Page</button>
+    </form>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <form autocomplete="off" action="#" th:action="@{/admin/books/update}" th:object="${candidate}" method="post" class="form-horizontal" role="form" id="bookCreate">
+                    <h2>Book Update Form</h2>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <label th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="validation-message"></label>
+                            <input type="text" th:field="*{name}" placeholder="Name" th:value="${candidate.name}" class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <label th:if="${#fields.hasErrors('author')}" th:errors="*{author}" class="validation-message"></label>
+                            <input type="text" th:field="*{author}" placeholder="Author" th:value="${candidate.author}" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <label th:if="${#fields.hasErrors('publisher')}" th:errors="*{publisher}" class="validation-message"></label>
+                            <input type="text" th:field="*{publisher}" placeholder="Publisher" th:value="${candidate.publisher}" class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <label th:if="${#fields.hasErrors('isbn')}" th:errors="*{isbn}" class="validation-message"></label>
+                            <input type="text" th:field="*{isbn}" placeholder="ISBN" th:value="${candidate.isbn}" class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <label th:if="${#fields.hasErrors('explanation')}" th:errors="*{explanation}" class="validation-message"></label>
+                            <textarea th:field="*{explanation}" form="bookCreate" th:value="${candidate.explanation}">Explanation...</textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <button type="submit" class="btn btn-primary btn-block">Update Book</button>
+                        </div>
+                    </div>
+
+                    <input type="hidden" th:field="*{id}" th:value="${candidate.id}">
+                    <span th:utext="${successMessage}"></span>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -27,7 +27,7 @@ public class LoginController {
         if (!(auth instanceof AnonymousAuthenticationToken)) {
 
             /* The user is logged in :) */
-            return new ModelAndView("redirect:/admin/home");
+            return new ModelAndView("redirect:/home");
         }
 
         ModelAndView modelAndView = new ModelAndView();
@@ -35,14 +35,14 @@ public class LoginController {
         return modelAndView;
     }
 
-    @RequestMapping(value="/admin/home", method = RequestMethod.GET)
+    @RequestMapping(value="/home", method = RequestMethod.GET)
     public ModelAndView home(){
         ModelAndView modelAndView = new ModelAndView();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = userService.findUserByUsername(auth.getName());
+        modelAndView.addObject("role", user.getRole());
         modelAndView.addObject("userName", "Welcome " + user.getName() + " (" + user.getUsername() + ")");
-        modelAndView.addObject("adminMessage","Content Available Only for Users with Admin Role");
-        modelAndView.setViewName("admin/home");
+        modelAndView.setViewName("home");
         return modelAndView;
     }
 }
