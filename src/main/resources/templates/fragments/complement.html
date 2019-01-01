@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+</head>
+<body>
+<nav th:fragment="header" class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <a class="navbar-brand col-sm-6 col-md-2 mr-0" th:href="@{/}">Library Management System</a>
+
+    <!--Make sure the form has the autocomplete function switched off:-->
+    <input id="bookName" class="form-control form-control-dark w-100" type="text" name="bookName" placeholder="Search book by name..." aria-label="search book by name..." disabled>
+
+    <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+            <a class="nav-link" th:href="@{/logout}">Sign out</a>
+        </li>
+    </ul>
+</nav>
+
+<nav th:fragment="sidebar" class="col-md-2 d-none d-md-block bg-light sidebar">
+    <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <span class="nav-link" th:utext="${userName}"></span>
+            </li>
+
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span>Manage Books</span>
+            </h6>
+            <li class="nav-item">
+                <a id="allBooks" class="nav-link" th:href="@{/}">
+                    <span data-feather="align-justify"></span>
+                    All Books</span>
+                </a>
+            </li>
+            <li class="nav-item" th:if="${role == 'ADMIN'}">
+                <a id="newBook" class="nav-link" th:href="@{/admin/books/create}">
+                    <span data-feather="book-open"></span>
+                    Create Book
+                </a>
+            </li>
+        </ul>
+
+        <div th:if="${role == 'ADMIN'}">
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                <span>Manage Users</span>
+            </h6>
+            <ul class="nav flex-column mb-2">
+                <li class="nav-item">
+                    <a id="allUsers" class="nav-link" th:href="@{/admin/users/}">
+                        <span data-feather="users"></span>
+                        All Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="searchUsers" class="nav-link" href="#">
+                        <span data-feather="user"></span>
+                        Search User
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a id="newUser" class="nav-link" th:href="@{/admin/users/create}">
+                        <span data-feather="user-plus"></span>
+                        New User
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<footer th:fragment="footer" class="footer">
+    <div class="container">
+        <p class="text-muted text-center">&copy; Object Oriented Design 2018 | Muhammad Luthfi | 44181661-9 </p>
+    </div>
+</footer>
+</body>
+</html>

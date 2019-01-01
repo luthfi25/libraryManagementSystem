@@ -3,34 +3,337 @@
       xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <title>Admin Page</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <title>Dashboard - Library Management System</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/autoComplete.css}"/>
+    <link rel="shortcut icon" type="image/png" th:href="@{/images/favicon.ico}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/home.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/stickyFooter.css}"/>
 </head>
 
 <body>
-<div class="container">
+<nav th:replace="fragments/complement :: header"></nav>
 
-    <form th:action="@{/logout}" method="get">
-        <button class="btn btn-md btn-danger btn-block" name="registration"
-                type="Submit">Logout
-        </button>
-    </form>
+    <div class="container-fluid">
+        <div class="row">
+            <nav th:replace="fragments/complement :: sidebar"></nav>
 
-    <div class="panel-group" style="margin-top:40px">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <span th:utext="${userName}"></span>
-            </div>
-            <p class="admin-message-text text-center" th:utext="${adminMessage}"></p>
-            <a th:href="@{/admin/users}" th:if="${role == 'ADMIN'}">Go To User Management</a>
-            <a th:href="@{/admin/users/create}" th:if="${role == 'ADMIN'}">Go To Create New User</a>
-            <a th:href="@{/books}">Go To Book Management</a>
-            <a th:href="@{/admin/books/create}" th:if="${role == 'ADMIN'}">Go To Create New Book</a>
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+                <hr/>
+                <h2>All Books</h2>
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Author</th>
+                            <th>Publisher</th>
+                            <th>ISBN</th>
+                            <th>Explanation</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="book, iter : ${books}">
+                            <td th:text="${book.id}"></td>
+                            <td th:text="${book.name}"></td>
+                            <td th:text="${book.author}"></td>
+                            <td th:text="${book.publisher}"></td>
+                            <td th:text="${book.isbn}"></td>
+                            <td th:text="${book.explanation}"></td>
+                            <td>
+                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" th:data-target="${'#modal-' + book.isbn}">Details</button>
+                                <button th:if="${role == 'ADMIN'}" type="button" class="btn btn-success btn-sm" data-toggle="modal" th:data-target="${'#modal-update-' + book.isbn}">Update</button>
+                                <form th:action="@{/admin/books/delete}" method="post" th:if="${role == 'ADMIN'}">
+                                    <input type="hidden" name="isbn" th:value="${book.isbn}"/>
+                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
         </div>
     </div>
 
+<footer th:replace="fragments/complement :: footer"></footer>
+
+<div th:each="book, iter : ${originalBooks}" class="modal fade" th:id="${'modal-' + book.isbn}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" th:id="${'modal-name-' + book.isbn}" th:text="${book.name}"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-sm">
+                        <tbody>
+                        <tr>
+                            <th>Author</th>
+                            <td th:text="${book.author}"></td>
+                        </tr>
+                        <tr>
+                            <th>Publisher</th>
+                            <td th:text="${book.publisher}"></td>
+                        </tr>
+                        <tr>
+                            <th>ISBN</th>
+                            <td th:text="${book.isbn}"></td>
+                        </tr>
+                        <tr>
+                            <th>Explanation</th>
+                            <td th:text="${book.explanation}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button th:if="${role == 'ADMIN'}" type="button" class="btn btn-success btn-sm" data-dismiss="modal" data-toggle="modal" th:data-target="${'#modal-update-' + book.isbn}">Update</button>
+                <form th:action="@{/admin/books/delete}" method="post" th:if="${role == 'ADMIN'}">
+                    <input type="hidden" name="isbn" th:value="${book.isbn}"/>
+                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div th:each="book, iter : ${originalBooks}" class="modal fade" th:id="${'modal-update-' + book.isbn}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" th:id="${'modal-update-name-' + book.isbn}">Update Book Form</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form autocomplete="off" action="#" th:action="@{/admin/books/update}" th:object="${book}" method="post" class="form-horizontal" role="form" th:id="${'bookUpdate-' + book.isbn}">
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{name}" placeholder="Name" id="name" name="name" class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{author}" placeholder="Author" id="author" name="author" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{publisher}" placeholder="Publisher" id="publisher" name="publisher" class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{isbn}" placeholder="ISBN" id="isbn" name="isbn" class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <textarea th:form="${'bookUpdate-' + book.isbn}" id="explanation" name="explanation" th:text="*{explanation}"></textarea>
+                        </div>
+                    </div>
+
+                    <input type="hidden" th:value="*{id}" id="id" name="id">
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <button type="submit" class="btn btn-primary btn-block" th:form="${'bookUpdate-' + book.isbn}">Update Book</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
+<script th:inline="javascript">
+$(window).on('load', function() {
+    $('.modal').on('show.bs.modal', function () {
+        $('.modal').not($(this)).each(function () {
+            $(this).modal('hide');
+        });
+    });
+
+    var message = [[${failedMessage}]];
+    if (message) {
+        alert(message);
+     }
+
+    feather.replace()
+
+      switch (window.location.pathname) {
+      case '/home':
+          $('#allBooks').addClass('active');
+          document.getElementById("bookName").disabled = false;
+          break;
+      case '/admin/users/':
+          $('#allUsers').addClass('active');
+          break;
+      case '/admin/users/create':
+          $('#newUser').addClass('active');
+          break;
+      case '/admin/books/create':
+        $('#newBook').addClass('active');
+        break;
+      case '/admin/users/search':
+        $('#searchUsers').addClass('active');
+        break;
+      default:
+          break;
+       }
+
+    function autocomplete(inp, arr) {
+      /*the autocomplete function takes two arguments,
+      the text field element and an array of possible autocompleted values:*/
+      var currentFocus;
+
+      /*execute a function when someone writes in the text field:*/
+      inp.addEventListener("input", function(e) {
+          var a, b, i, val = this.value;
+
+          /*close any already open lists of autocompleted values*/
+          closeAllLists();
+          if (!val) { return false;}
+          currentFocus = -1;
+
+          /*create a DIV element that will contain the items (values):*/
+          a = document.createElement("DIV");
+          a.setAttribute("id", this.id + "autocomplete-list");
+          a.setAttribute("class", "autocomplete-items");
+
+          /*append the DIV element as a child of the autocomplete container:*/
+          this.parentNode.appendChild(a);
+
+          /*for each item in the array...*/
+          for (i = 0; i < arr.length; i++) {
+
+            /*check if the item starts with the same letters as the text field value:*/
+            if (arr[i].name.substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+
+              /*create a DIV element for each matching element:*/
+              b = document.createElement("DIV");
+
+              /*make the matching letters bold:*/
+              b.innerHTML = "<strong>" + arr[i].name.substr(0, val.length) + "</strong>";
+              b.innerHTML += arr[i].name.substr(val.length);
+
+              /*insert a input field that will hold the current array item's value:*/
+              b.innerHTML += "<input type='hidden' value='#modal-" + arr[i].isbn + "'>";
+
+              /*execute a function when someone clicks on the item value (DIV element):*/
+              b.addEventListener("click", function(e) {
+
+                  /*insert the value for the autocomplete text field:*/
+                  isbn = this.getElementsByTagName("input")[0].value;
+                  $(isbn).modal('show');
+
+                  /*close the list of autocompleted values,
+                  (or any other open lists of autocompleted values:*/
+                  closeAllLists();
+              });
+              a.appendChild(b);
+            }
+          }
+      });
+
+      /*execute a function presses a key on the keyboard:*/
+      inp.addEventListener("keydown", function(e) {
+          var x = document.getElementById(this.id + "autocomplete-list");
+          if (x) x = x.getElementsByTagName("div");
+          if (e.keyCode == 40) {
+
+            /*If the arrow DOWN key is pressed,
+            increase the currentFocus variable:*/
+            currentFocus++;
+
+            /*and and make the current item more visible:*/
+            addActive(x);
+          } else if (e.keyCode == 38) { //up
+
+            /*If the arrow UP key is pressed,
+            decrease the currentFocus variable:*/
+            currentFocus--;
+
+            /*and and make the current item more visible:*/
+            addActive(x);
+          } else if (e.keyCode == 13) {
+
+            /*If the ENTER key is pressed, prevent the form from being submitted,*/
+            e.preventDefault();
+            if (currentFocus > -1) {
+
+              /*and simulate a click on the "active" item:*/
+              if (x) x[currentFocus].click();
+            }
+          }
+      });
+
+      function addActive(x) {
+
+        /*a function to classify an item as "active":*/
+        if (!x) return false;
+
+        /*start by removing the "active" class on all items:*/
+        removeActive(x);
+        if (currentFocus >= x.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = (x.length - 1);
+
+        /*add class "autocomplete-active":*/
+        x[currentFocus].classList.add("autocomplete-active");
+      }
+
+      function removeActive(x) {
+
+        /*a function to remove the "active" class from all autocomplete items:*/
+        for (var i = 0; i < x.length; i++) {
+          x[i].classList.remove("autocomplete-active");
+        }
+      }
+      function closeAllLists(elmnt) {
+
+        /*close all autocomplete lists in the document,
+        except the one passed as an argument:*/
+        var x = document.getElementsByClassName("autocomplete-items");
+        for (var i = 0; i < x.length; i++) {
+          if (elmnt != x[i] && elmnt != inp) {
+            x[i].parentNode.removeChild(x[i]);
+          }
+        }
+      }
+
+      /*execute a function when someone clicks in the document:*/
+      document.addEventListener("click", function (e) {
+          closeAllLists(e.target);
+      });
+    }
+
+    /*An array containing all book names:*/
+    var books = [[${books}]];
+
+    /*initiate the autocomplete function on the "bookName" element, and pass along the countries array as possible autocomplete values:*/
+    autocomplete(document.getElementById("bookName"), books);
+});
+</script>
+
 </body>
 </html>
