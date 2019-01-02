@@ -1,12 +1,14 @@
 package com.ood.libraryManagementSystem.controller;
 
 import com.ood.libraryManagementSystem.model.User;
+import com.ood.libraryManagementSystem.service.BookService;
 import com.ood.libraryManagementSystem.service.UserService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -19,6 +21,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private BookService bookService;
 
     @RequestMapping(value="/admin/users", method = RequestMethod.GET)
     public ModelAndView user(){
@@ -39,7 +44,7 @@ public class UserController {
         modelAndView.addObject("currentUser", user);
 
         if (user.getRole().equals("ADMIN")) {
-            modelAndView.addObject("userName", "Welcome, " + user.getUsername() + "<span class=\"badge badge-success\">Admin</span>");
+            modelAndView.addObject("userName", "Welcome, " + user.getUsername() + " <span class=\"badge badge-success\">Admin</span>");
         } else {
             modelAndView.addObject("userName", "Welcome, " + user.getUsername());
         }
@@ -59,7 +64,7 @@ public class UserController {
         modelAndView.addObject("role", currentUser.getRole());
 
         if (currentUser.getRole().equals("ADMIN")) {
-            modelAndView.addObject("userName", "Welcome, " + currentUser.getUsername() + "<span class=\"badge badge-success\">Admin</span>");
+            modelAndView.addObject("userName", "Welcome, " + currentUser.getUsername() + " <span class=\"badge badge-success\">Admin</span>");
         } else {
             modelAndView.addObject("userName", "Welcome, " + currentUser.getUsername());
         }
@@ -140,13 +145,21 @@ public class UserController {
         }
 
         if (!updateResult) {
+            List<User> users = userService.allUser();
+
+            for (User u:users) {
+                u.setPassword(StringUtils.abbreviate(u.getPassword(),20));
+                u.setName(StringUtils.abbreviate(u.getName(),20));
+                u.setUsername(StringUtils.abbreviate(u.getUsername(),20));
+            }
+
+            modelAndView.addObject("currentUser", currentUser);
+            modelAndView.addObject("users", users);
+
             modelAndView.addObject("failedMessage", "There is already a user registered with the username provided.");
-            modelAndView.addObject("candidate", user);
-            modelAndView.setViewName("admin/users/update");
+            modelAndView.setViewName("admin/users/show");
         } else {
-            modelAndView.addObject("successMessage", "User has been updated successfully");
-            modelAndView.addObject("candidate", user);
-            modelAndView.setViewName("admin/users/update");
+            return new ModelAndView("redirect:/admin/users/");
 
         }
         return modelAndView;
@@ -157,5 +170,27 @@ public class UserController {
         username = username.substring(9);
         userService.deleteUser(username);
         return new ModelAndView("redirect:/admin/users");
+    }
+
+    @RequestMapping(value = "/admin/users/search", method = RequestMethod.GET)
+    public ModelAndView searchUser() {
+        ModelAndView modelAndView = new ModelAndView();
+        List<User> users = userService.allUser();
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = userService.findUserByUsername(auth.getName());
+
+        modelAndView.addObject("users", users);
+        modelAndView.addObject("role", user.getRole());
+        modelAndView.addObject("currentUser", user);
+
+        if (user.getRole().equals("ADMIN")) {
+            modelAndView.addObject("userName", "Welcome, " + user.getUsername() + " <span class=\"badge badge-success\">Admin</span>");
+        } else {
+            modelAndView.addObject("userName", "Welcome, " + user.getUsername());
+        }
+
+        modelAndView.setViewName("admin/users/search");
+        return modelAndView;
     }
 }

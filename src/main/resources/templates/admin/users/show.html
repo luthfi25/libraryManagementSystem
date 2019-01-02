@@ -45,7 +45,7 @@
                             <span class="badge badge-secondary" th:if="${user.role} != 'ADMIN'">Regular</span>
                         </td>
                         <td>
-                            <a th:href="@{/admin/users/update(username=${user.username})}" th:if="${role == 'ADMIN' and currentUser.username != user.username}" type="button" class="btn btn-success btn-sm">Update</a>
+                            <button th:if="${role == 'ADMIN' and currentUser.username != user.username}" type="button" class="btn btn-success btn-sm" data-dismiss="modal" data-toggle="modal" th:data-target="${'#modal-update-' + user.username}">Update</button>
                             <form th:action="@{/admin/users/delete}" method="post" th:if="${role == 'ADMIN' and currentUser.username != user.username}">
                                 <input type="hidden" name="username" th:value="${user.username}"/>
                                 <button type="submit" class="btn btn-danger btn-sm">Remove</button>
@@ -61,20 +61,87 @@
 
 <footer th:replace="fragments/complement :: footer"></footer>
 
+<div th:each="user, iter : ${users}" class="modal fade" th:id="${'modal-update-' + user.username}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" th:id="${'modal-update-name-' + user.username}">Update User Form</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form autocomplete="off" action="#" th:action="@{/admin/users/update}" th:object="${user}" method="post" class="form-horizontal" role="form" th:id="${'userUpdate-' + user.username}">
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{name}" placeholder="Name" name="name" id="name"
+                                   class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{username}" placeholder="Username" id="username" name="username"
+                                   class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{password}"
+                                   placeholder="Password" id="password" name="password" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <select class="form-control" th:value="*{role}" id="role" name="role">
+                                <option selected="selected" th:if="*{role == 'ADMIN'}">ADMIN</option>
+                                <option th:if="*{role != 'ADMIN'}">ADMIN</option>
+                                <option selected="selected" th:if="*{role != 'ADMIN'}">REGULAR</option>
+                                <option th:if="*{role == 'ADMIN'}">REGULAR</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <input type="hidden" th:value="*{id}" id="id" name="id">
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <button type="submit" class="btn btn-primary btn-block" th:form="${'userUpdate-' + user.username}">Update User</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
 <!-- Icons -->
 <script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
-<script>
-      feather.replace()
+<script th:inline="javascript">
+$( document ).ready(function() {
+    feather.replace()
+
+      var message = [[${failedMessage}]];
+        if (message) {
+            alert(message);
+         }
 
       switch (window.location.pathname) {
       case '/home':
           $('#allBooks').addClass('active');
           break;
       case '/admin/users/':
+          $('#allUsers').addClass('active');
+          break;
+      case '/admin/users/update':
           $('#allUsers').addClass('active');
           break;
       case '/admin/users/create':
@@ -89,6 +156,7 @@
       default:
           break;
        }
+});
 </script>
 </body>
 </html>

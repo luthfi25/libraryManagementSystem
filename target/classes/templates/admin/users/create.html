@@ -53,8 +53,11 @@
 
                     <div class="form-group">
                         <div class="col-sm-9">
-                            <input type="text" th:field="*{role}" placeholder="Role"
-                                   class="form-control" /> <label
+                            <select class="form-control" th:field="*{role}">
+                                <option  value="ADMIN">ADMIN</option>
+                                <option  value="REGULAR">REGULAR</option>
+                            </select>
+                            <label
                                 th:if="${#fields.hasErrors('role')}" th:errors="*{role}"
                                 class="validation-message"></label>
                         </div>

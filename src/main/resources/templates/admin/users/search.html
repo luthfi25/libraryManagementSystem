@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
-
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title>Dashboard - Library Management System</title>
+    <meta charset="UTF-8">
+    <title>Search User - Library Management System</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -11,44 +12,62 @@
     <link rel="shortcut icon" type="image/png" th:href="@{/images/favicon.ico}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/css/home.css}"/>
     <link rel="stylesheet" type="text/css" th:href="@{/css/stickyFooter.css}"/>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/searchBar.css}"/>
 </head>
-
 <body>
+
 <nav th:replace="fragments/complement :: header"></nav>
 
-    <div class="container-fluid">
-        <div class="row">
-            <nav th:replace="fragments/complement :: sidebar"></nav>
+<div class="container-fluid">
+    <div class="row">
+        <nav th:replace="fragments/complement :: sidebar"></nav>
 
-            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-                <hr/>
-                <h2>All Books</h2>
-                <div class="table-responsive">
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <hr/>
+            <h2>Search User</h2>
+            <hr/>
+            <div id="custom-search-input">
+                <div class="input-group col-md-12">
+                    <input id="userNameSearch" type="text" class="form-control input-lg" placeholder="Input username..." />
+                    <span class="input-group-btn">
+                <button class="btn btn-info btn-lg" type="button">
+                    <i class="glyphicon glyphicon-search"></i>
+                </button>
+            </span>
+                </div>
+    </div>
+            <div style="display:none;margin-top:50px;" class="table-responsive" th:each="user, iter : ${users}" th:id="${'table-' + user.username}">
                     <table class="table table-striped table-sm">
-                        <thead>
+                        <tbody>
                         <tr>
                             <th>ID</th>
-                            <th>Name</th>
-                            <th>Author</th>
-                            <th>Publisher</th>
-                            <th>ISBN</th>
-                            <th>Explanation</th>
-                            <th>Action</th>
+                            <td th:text="${user.id}"></td>
                         </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="book, iter : ${books}">
-                            <td th:text="${book.id}"></td>
-                            <td th:text="${book.name}"></td>
-                            <td th:text="${book.author}"></td>
-                            <td th:text="${book.publisher}"></td>
-                            <td th:text="${book.isbn}"></td>
-                            <td th:text="${book.explanation}"></td>
+                        <tr>
+                            <th>Full Name</th>
+                            <td th:text="${user.name}"></td>
+                        </tr>
+                        <tr>
+                            <th>Username</th>
+                            <td th:text="${user.username}"></td>
+                        </tr>
+                        <tr>
+                            <th>Password</th>
+                            <td th:text="${user.password}"></td>
+                        </tr>
+                        <tr>
+                            <th>Role</th>
                             <td>
-                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" th:data-target="${'#modal-' + book.isbn}">Details</button>
-                                <button th:if="${role == 'ADMIN'}" type="button" class="btn btn-success btn-sm" data-toggle="modal" th:data-target="${'#modal-update-' + book.isbn}">Update</button>
-                                <form th:action="@{/admin/books/delete}" method="post" th:if="${role == 'ADMIN'}">
-                                    <input type="hidden" name="isbn" th:value="${book.isbn}"/>
+                                <span class="badge badge-success" th:if="${user.role} == 'ADMIN'">Admin</span>
+                                <span class="badge badge-secondary" th:if="${user.role} != 'ADMIN'">Regular</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${role == 'ADMIN' and currentUser.username != user.username}" >
+                            <th>Action</th>
+                            <td>
+                                <button type="button" class="btn btn-success btn-sm" data-dismiss="modal" data-toggle="modal" th:data-target="${'#modal-update-' + user.username}">Update</button>
+                                <form th:action="@{/admin/users/delete}" method="post">
+                                    <input type="hidden" name="username" th:value="${user.username}"/>
                                     <button type="submit" class="btn btn-danger btn-sm">Remove</button>
                                 </form>
                             </td>
@@ -56,94 +75,52 @@
                         </tbody>
                     </table>
                 </div>
-            </main>
-        </div>
-    </div>
-
-<footer th:replace="fragments/complement :: footer"></footer>
-
-<div th:each="book, iter : ${originalBooks}" class="modal fade" th:id="${'modal-' + book.isbn}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" th:id="${'modal-name-' + book.isbn}" th:text="${book.name}"></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="table-responsive">
-                    <table class="table table-striped table-sm">
-                        <tbody>
-                        <tr>
-                            <th>Author</th>
-                            <td th:text="${book.author}"></td>
-                        </tr>
-                        <tr>
-                            <th>Publisher</th>
-                            <td th:text="${book.publisher}"></td>
-                        </tr>
-                        <tr>
-                            <th>ISBN</th>
-                            <td th:text="${book.isbn}"></td>
-                        </tr>
-                        <tr>
-                            <th>Explanation</th>
-                            <td th:text="${book.explanation}"></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button th:if="${role == 'ADMIN'}" type="button" class="btn btn-success btn-sm" data-dismiss="modal" data-toggle="modal" th:data-target="${'#modal-update-' + book.isbn}">Update</button>
-                <form th:action="@{/admin/books/delete}" method="post" th:if="${role == 'ADMIN'}">
-                    <input type="hidden" name="isbn" th:value="${book.isbn}"/>
-                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                </form>
-            </div>
-        </div>
+        </main>
     </div>
 </div>
 
-<div th:each="book, iter : ${originalBooks}" class="modal fade" th:id="${'modal-update-' + book.isbn}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<footer th:replace="fragments/complement :: footer"></footer>
+
+<div th:each="user, iter : ${users}" class="modal fade" th:id="${'modal-update-' + user.username}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" th:id="${'modal-update-name-' + book.isbn}">Update Book Form</h5>
+                <h5 class="modal-title" th:id="${'modal-update-name-' + user.username}">Update User Form</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <form autocomplete="off" action="#" th:action="@{/admin/books/update}" th:object="${book}" method="post" class="form-horizontal" role="form" th:id="${'bookUpdate-' + book.isbn}">
+                <form autocomplete="off" action="#" th:action="@{/admin/users/update}" th:object="${user}" method="post" class="form-horizontal" role="form" th:id="${'userUpdate-' + user.username}">
                     <div class="form-group">
                         <div class="col-sm-9">
-                            <input type="text" th:value="*{name}" placeholder="Name" id="name" name="name" class="form-control"/>
+                            <input type="text" th:value="*{name}" placeholder="Name" name="name" id="name"
+                                   class="form-control" />
                         </div>
                     </div>
 
                     <div class="form-group">
                         <div class="col-sm-9">
-                            <input type="text" th:value="*{author}" placeholder="Author" id="author" name="author" class="form-control" />
+                            <input type="text" th:value="*{username}" placeholder="Username" id="username" name="username"
+                                   class="form-control" />
                         </div>
                     </div>
 
                     <div class="form-group">
                         <div class="col-sm-9">
-                            <input type="text" th:value="*{publisher}" placeholder="Publisher" id="publisher" name="publisher" class="form-control"/>
+                            <input type="text" th:value="*{password}"
+                                   placeholder="Password" id="password" name="password" class="form-control" />
                         </div>
                     </div>
 
                     <div class="form-group">
                         <div class="col-sm-9">
-                            <input type="text" th:value="*{isbn}" placeholder="ISBN" id="isbn" name="isbn" class="form-control"/>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <div class="col-sm-9">
-                            <textarea th:form="${'bookUpdate-' + book.isbn}" id="explanation" name="explanation" th:text="*{explanation}"></textarea>
+                            <select class="form-control" th:value="*{role}" id="role" name="role">
+                                <option selected="selected" th:if="*{role == 'ADMIN'}">ADMIN</option>
+                                <option th:if="*{role != 'ADMIN'}">ADMIN</option>
+                                <option selected="selected" th:if="*{role != 'ADMIN'}">REGULAR</option>
+                                <option th:if="*{role == 'ADMIN'}">REGULAR</option>
+                            </select>
                         </div>
                     </div>
 
@@ -154,7 +131,7 @@
             <div class="modal-footer">
                 <div class="form-group">
                     <div class="col-sm-12">
-                        <button type="submit" class="btn btn-primary btn-block" th:form="${'bookUpdate-' + book.isbn}">Update Book</button>
+                        <button type="submit" class="btn btn-primary btn-block" th:form="${'userUpdate-' + user.username}">Update User</button>
                     </div>
                 </div>
             </div>
@@ -232,24 +209,31 @@ $(window).on('load', function() {
           for (i = 0; i < arr.length; i++) {
 
             /*check if the item starts with the same letters as the text field value:*/
-            if (arr[i].name.substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+            if (arr[i].username.substr(0, val.length).toUpperCase() == val.toUpperCase()) {
 
               /*create a DIV element for each matching element:*/
               b = document.createElement("DIV");
 
               /*make the matching letters bold:*/
-              b.innerHTML = "<strong>" + arr[i].name.substr(0, val.length) + "</strong>";
-              b.innerHTML += arr[i].name.substr(val.length);
+              b.innerHTML = "<strong>" + arr[i].username.substr(0, val.length) + "</strong>";
+              b.innerHTML += arr[i].username.substr(val.length);
 
               /*insert a input field that will hold the current array item's value:*/
-              b.innerHTML += "<input type='hidden' value='#modal-" + arr[i].isbn + "'>";
+              b.innerHTML += "<input type='hidden' value='table-" + arr[i].username + "'>";
 
               /*execute a function when someone clicks on the item value (DIV element):*/
               b.addEventListener("click", function(e) {
 
                   /*insert the value for the autocomplete text field:*/
-                  isbn = this.getElementsByTagName("input")[0].value;
-                  $(isbn).modal('show');
+                  for (var i = 0; i < users.length; i++) {
+                       var theID = 'table-' + users[i].username;
+                       var theDIV = document.getElementById(theID);
+                       theDIV.style.display = 'none';
+                  }
+
+                  username = this.getElementsByTagName("input")[0].value;
+                  var newDIV = document.getElementById(username);
+                  newDIV.style.display = 'block';
 
                   /*close the list of autocompleted values,
                   (or any other open lists of autocompleted values:*/
@@ -331,11 +315,11 @@ $(window).on('load', function() {
       });
     }
 
-    /*An array containing all book names:*/
-    var books = [[${books}]];
+    /*An array containing all users:*/
+    var users = [[${users}]];
 
-    /*initiate the autocomplete function on the "bookName" element, and pass along the countries array as possible autocomplete values:*/
-    autocomplete(document.getElementById("bookName"), books);
+    /*initiate the autocomplete function on the "userNameSearch" element, and pass along the countries array as possible autocomplete values:*/
+    autocomplete(document.getElementById("userNameSearch"), users);
 });
 </script>
 
