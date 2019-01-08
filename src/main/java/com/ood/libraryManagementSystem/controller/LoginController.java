@@ -1,7 +1,5 @@
 package com.ood.libraryManagementSystem.controller;
 
-import javax.validation.Valid;
-
 import com.ood.libraryManagementSystem.model.Book;
 import com.ood.libraryManagementSystem.model.User;
 import com.ood.libraryManagementSystem.service.BookService;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller

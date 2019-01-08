@@ -1,10 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<div th:each="book, iter : ${originalBooks}" class="modal fade" th:id="${'modal-update-' + book.isbn}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" th:id="${'modal-update-name-' + book.isbn}">Update Book Form</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form autocomplete="off" action="#" th:action="@{/admin/books/update}" th:object="${book}" method="post" class="form-horizontal" role="form" th:id="${'bookUpdate-' + book.isbn}">
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{name}" placeholder="Name" id="name" name="name" class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{author}" placeholder="Author" id="author" name="author" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{publisher}" placeholder="Publisher" id="publisher" name="publisher" class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <input type="text" th:value="*{isbn}" placeholder="ISBN" id="isbn" name="isbn" class="form-control"/>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-9">
+                            <textarea th:form="${'bookUpdate-' + book.isbn}" id="explanation" name="explanation" th:text="*{explanation}"></textarea>
+                        </div>
+                    </div>
+
+                    <input type="hidden" th:value="*{id}" id="id" name="id">
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <button type="submit" class="btn btn-primary btn-block" th:form="${'bookUpdate-' + book.isbn}">Update Book</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </html>

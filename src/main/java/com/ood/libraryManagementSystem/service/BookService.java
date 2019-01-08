@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ood.libraryManagementSystem.model.Book;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,9 @@ public class BookService {
     private TypeReference<List<Book>> typeReference;
     private InputStream inputStream;
     private ClassLoader classLoader;
+    private KeyService keyService;
+
+    private static final Logger logger = LoggerFactory.getLogger(BookService.class);
 
     @Autowired
     public BookService() {
@@ -33,9 +38,35 @@ public class BookService {
         mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         typeReference = new TypeReference<List<Book>>(){};
         classLoader = getClass().getClassLoader();
+        keyService = new KeyService();
+    }
+
+    public List<Book> encryptBooks(List<Book> books) {
+        for (Book b: books) {
+            b.setAuthor(keyService.encrypt(b.getAuthor()));
+            b.setName(keyService.encrypt(b.getName()));
+            b.setPublisher(keyService.encrypt(b.getPublisher()));
+            b.setIsbn(keyService.encrypt(b.getIsbn()));
+            b.setExplanation(keyService.encrypt(b.getExplanation()));
+        }
+
+        return books;
+    }
+
+    public List<Book> decryptBooks(List<Book> books) {
+        for (Book b: books) {
+            b.setAuthor(keyService.decrypt(b.getAuthor()));
+            b.setName(keyService.decrypt(b.getName()));
+            b.setPublisher(keyService.decrypt(b.getPublisher()));
+            b.setIsbn(keyService.decrypt(b.getIsbn()));
+            b.setExplanation(keyService.decrypt(b.getExplanation()));
+        }
+
+        return books;
     }
 
     public void writeToDatabase(List<Book> books){
+        books = encryptBooks(books);
         File databaseFile = new File(classLoader.getResource("json/books.json").getFile());
 
         try {
@@ -45,10 +76,11 @@ public class BookService {
             generator.flush();
             generator.close();
         } catch (IOException e) {
-            System.out.println("Failed writing books " + e.toString());
+            logger.error("Failed writing books " + e.toString());
         }
     }
 
+//    @Async
     public List<Book> allBook() {
         inputStream = TypeReference.class.getResourceAsStream("/json/books.json");
         List<Book> books = new ArrayList<>();
@@ -56,27 +88,15 @@ public class BookService {
         try {
             books = mapper.readValue(inputStream, typeReference);
         } catch (IOException e) {
-            System.out.println("Failed reading books " + e.toString());
+            logger.error("Failed reading books " + e.toString());
             return null;
         }
 
+        books = decryptBooks(books);
         return books;
     }
 
-    public Book findBookByName(String name) {
-        List<Book> books = allBook();
-
-        if (books != null) {
-            List<Book> desiredBook = books.stream().filter(b -> b.getName() != null && b.getName().equals(name)).collect(Collectors.toList());
-
-            if (desiredBook.size() > 0) {
-                return desiredBook.get(0);
-            }
-        }
-
-        return null;
-    }
-
+//    @Async
     public Book findBookByISBN(String isbn) {
         List<Book> books = allBook();
 
@@ -91,10 +111,12 @@ public class BookService {
         return null;
     }
 
+//    @Async
     public void saveBook(Book book) {
         List<Book> books = allBook();
 
         if (book == null) {
+            logger.error("failed creating book, book data is null");
             return;
         }
 
@@ -103,6 +125,7 @@ public class BookService {
         writeToDatabase(books);
     }
 
+//    @Async
     public boolean updateBook(Book book) {
         List<Book> books = allBook();
 
@@ -120,6 +143,7 @@ public class BookService {
                 ISBNs.add(is);
             } else {
                 //DUPLICATE
+                logger.error("failed updating book, duplicate isbn. isbn: " + book.getIsbn());
                 return false;
             }
         }
@@ -128,6 +152,7 @@ public class BookService {
         return true;
     }
 
+//    @Async
     public void deleteBook(String isbn) {
         List<Book> books = allBook();
 
@@ -144,6 +169,7 @@ public class BookService {
             i++;
         }
 
+        logger.info("sucessfully deleted book with isbn: " + isbn);
         writeToDatabase(books);
     }
 

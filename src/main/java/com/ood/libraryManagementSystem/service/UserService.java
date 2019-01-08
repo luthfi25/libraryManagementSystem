@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ood.libraryManagementSystem.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,9 @@ public class UserService {
     private TypeReference<List<User>> typeReference;
     private InputStream inputStream;
     private ClassLoader classLoader;
+    private KeyService keyService;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Autowired
     public UserService(BCryptPasswordEncoder bCryptPasswordEncoder) {
@@ -32,12 +37,36 @@ public class UserService {
         mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         typeReference = new TypeReference<List<User>>(){};
         classLoader = getClass().getClassLoader();
+        keyService = new KeyService();
+    }
+
+    public List<User> encryptUsers(List<User> users) {
+        for (User u: users) {
+            u.setUsername(keyService.encrypt(u.getUsername()));
+            u.setName(keyService.encrypt(u.getName()));
+            u.setPassword(keyService.encrypt(u.getPassword()));
+            u.setRole(keyService.encrypt(u.getRole()));
+        }
+
+        return users;
+    }
+
+    public List<User> decryptUsers(List<User> users) {
+        for (User u: users) {
+            u.setUsername(keyService.decrypt(u.getUsername()));
+            u.setName(keyService.decrypt(u.getName()));
+            u.setPassword(keyService.decrypt(u.getPassword()));
+            u.setRole(keyService.decrypt(u.getRole()));
+        }
+
+        return users;
     }
 
     public BCryptPasswordEncoder getbCryptPasswordEncoder() {
         return bCryptPasswordEncoder;
     }
 
+//    @Async
     public List<User> allUser() {
         inputStream = TypeReference.class.getResourceAsStream("/json/users.json");
         List<User> users = new ArrayList<>();
@@ -45,14 +74,16 @@ public class UserService {
         try {
             users = mapper.readValue(inputStream, typeReference);
         } catch (IOException e) {
-            System.out.println("Failed reading users " + e.toString());
+            logger.error("Failed reading users " + e.toString());
             return null;
         }
 
+        users = decryptUsers(users);
         return users;
     }
 
     public void writeToDatabase(List<User> users) {
+        users = encryptUsers(users);
         File databaseFile = new File(classLoader.getResource("json/users.json").getFile());
 
         try {
@@ -62,10 +93,11 @@ public class UserService {
             generator.flush();
             generator.close();
         } catch (IOException e) {
-            System.out.println("Failed writing users " + e.toString());
+            logger.error("Failed writing users " + e.toString());
         }
     }
 
+//    @Async
     public User findUserByUsername(String username) {
         List<User> users = allUser();
 
@@ -80,10 +112,12 @@ public class UserService {
         return null;
     }
 
+//    @Async
     public void saveUser(User user) {
         List<User> users = allUser();
 
         if (user == null) {
+            logger.error("failed creating new user, user data is null");
             return;
         }
 
@@ -93,10 +127,11 @@ public class UserService {
         writeToDatabase(users);
     }
 
+//    @Async
     public boolean updateUser(User user) {
         List<User> users = allUser();
 
-        if (user == null) {
+        if (users == null) {
             return false;
         }
 
@@ -111,6 +146,7 @@ public class UserService {
                 usernames.add(un);
             } else {
                 //DUPLICATE
+                logger.error("failed updating user, duplicate username. username: " + user.getUsername());
                 return false;
             }
         }
@@ -119,6 +155,7 @@ public class UserService {
         return true;
     }
 
+//    @Async
     public void deleteUser(String username) {
         List<User> users = allUser();
 
@@ -135,6 +172,7 @@ public class UserService {
             i++;
         }
 
+        logger.info("sucessfully deleted user with username: " + username);
         writeToDatabase(users);
     }
 

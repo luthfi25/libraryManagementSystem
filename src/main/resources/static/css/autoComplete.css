@@ -43,11 +43,13 @@ input[type=submit] {
   margin-left: 225px;
 }
 
-.autocomplete-items div {
-  padding: 10px;
-  cursor: pointer;
-  background-color: #98fb98;
-  border-bottom: 1px solid #d4d4d4;
+#userNameSearchautocomplete-list div {
+    padding: 10px;
+   cursor: pointer;
+   background-color: #98fb98;
+   border-bottom: 1px solid #d4d4d4;
+   max-width: 100%;
+   margin-left: 0px;
 }
 
 /*when hovering an item:*/
