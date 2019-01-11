@@ -150,7 +150,7 @@ public class BookController {
 
             modelAndView.addObject("failedMessage", "There is already a book registered with the isbn provided.");
             modelAndView.setViewName("home");
-        } else { ;
+        } else {
             return new ModelAndView("redirect:/");
         }
 

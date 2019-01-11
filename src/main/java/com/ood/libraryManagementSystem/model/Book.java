@@ -6,6 +6,7 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import java.util.Objects;
 
 @Data
 @Entity
@@ -83,5 +84,23 @@ public class Book {
     }
 
     public Book() {
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Book book = (Book) o;
+        return id == book.id &&
+                Objects.equals(name, book.name) &&
+                Objects.equals(author, book.author) &&
+                Objects.equals(publisher, book.publisher) &&
+                Objects.equals(isbn, book.isbn) &&
+                Objects.equals(explanation, book.explanation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, author, publisher, isbn, explanation);
     }
 }

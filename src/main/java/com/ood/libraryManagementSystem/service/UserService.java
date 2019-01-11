@@ -10,6 +10,8 @@ import com.ood.libraryManagementSystem.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,7 @@ public class UserService {
     private InputStream inputStream;
     private ClassLoader classLoader;
     private KeyService keyService;
+    private boolean isFileLocked = false;
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -82,11 +85,18 @@ public class UserService {
         return users;
     }
 
-    public void writeToDatabase(List<User> users) {
+    public boolean writeToDatabase(List<User> users) {
+        if (isFileLocked) {
+            return false;
+        }
+
+        isFileLocked = true;
         users = encryptUsers(users);
-        File databaseFile = new File(classLoader.getResource("json/users.json").getFile());
 
         try {
+            ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext();
+            File databaseFile = appContext.getResource("classpath:json/users.json").getFile();
+
             JsonFactory factory = new JsonFactory();
             JsonGenerator generator = factory.createGenerator(databaseFile, JsonEncoding.UTF8);
             mapper.writeValue(generator, users);
@@ -94,7 +104,11 @@ public class UserService {
             generator.close();
         } catch (IOException e) {
             logger.error("Failed writing users " + e.toString());
+        } finally {
+            isFileLocked = false;
         }
+
+        return true;
     }
 
 //    @Async
@@ -124,7 +138,12 @@ public class UserService {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         user.setId(users.size());
         users.add(user);
-        writeToDatabase(users);
+
+        boolean succeedWrite = writeToDatabase(users);
+        if (!succeedWrite) {
+            logger.error("failed writing user, file is locked");
+            return;
+        }
     }
 
 //    @Async
@@ -151,7 +170,12 @@ public class UserService {
             }
         }
 
-        writeToDatabase(users);
+        boolean succeedWrite = writeToDatabase(users);
+        if (!succeedWrite) {
+            logger.error("failed writing user, file is locked");
+            return false;
+        }
+
         return true;
     }
 
@@ -173,7 +197,12 @@ public class UserService {
         }
 
         logger.info("sucessfully deleted user with username: " + username);
-        writeToDatabase(users);
+
+        boolean succeedWrite = writeToDatabase(users);
+        if (!succeedWrite) {
+            logger.error("failed writing user, file is locked");
+            return;
+        }
     }
 
 }

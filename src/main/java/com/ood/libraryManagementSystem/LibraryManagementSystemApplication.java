@@ -5,12 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationContext;
-import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.Arrays;
 
 @SpringBootApplication
-//@EnableAsync
 public class LibraryManagementSystemApplication {
 
 	public static void main(String[] args) {

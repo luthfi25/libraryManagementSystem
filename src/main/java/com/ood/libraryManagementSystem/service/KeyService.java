@@ -8,13 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.SecureRandom;
 
 import static org.apache.commons.codec.binary.Hex.decodeHex;
-import static org.apache.commons.codec.binary.Hex.encodeHex;
 
 @Service
 public class KeyService {

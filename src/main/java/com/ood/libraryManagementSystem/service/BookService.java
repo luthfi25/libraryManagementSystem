@@ -10,6 +10,9 @@ import com.ood.libraryManagementSystem.model.Book;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -29,6 +32,7 @@ public class BookService {
     private InputStream inputStream;
     private ClassLoader classLoader;
     private KeyService keyService;
+    private boolean isFileLocked = false;
 
     private static final Logger logger = LoggerFactory.getLogger(BookService.class);
 
@@ -65,11 +69,18 @@ public class BookService {
         return books;
     }
 
-    public void writeToDatabase(List<Book> books){
+    public boolean writeToDatabase(List<Book> books){
+        if (isFileLocked) {
+            return false;
+        }
+
+        isFileLocked = true;
         books = encryptBooks(books);
-        File databaseFile = new File(classLoader.getResource("json/books.json").getFile());
 
         try {
+            ClassPathXmlApplicationContext appContext = new ClassPathXmlApplicationContext();
+            File databaseFile = appContext.getResource("classpath:json/books.json").getFile();
+
             JsonFactory factory = new JsonFactory();
             JsonGenerator generator = factory.createGenerator(databaseFile, JsonEncoding.UTF8);
             mapper.writeValue(generator, books);
@@ -77,10 +88,13 @@ public class BookService {
             generator.close();
         } catch (IOException e) {
             logger.error("Failed writing books " + e.toString());
+        } finally {
+            isFileLocked = false;
         }
+
+        return true;
     }
 
-//    @Async
     public List<Book> allBook() {
         inputStream = TypeReference.class.getResourceAsStream("/json/books.json");
         List<Book> books = new ArrayList<>();
@@ -122,7 +136,12 @@ public class BookService {
 
         book.setId(books.size());
         books.add(book);
-        writeToDatabase(books);
+
+        boolean succeedWrite = writeToDatabase(books);
+        if (!succeedWrite) {
+            logger.error("failed writing book, file is locked");
+            return;
+        }
     }
 
 //    @Async
@@ -148,7 +167,12 @@ public class BookService {
             }
         }
 
-        writeToDatabase(books);
+        boolean succeedWrite = writeToDatabase(books);
+        if (!succeedWrite) {
+            logger.error("failed writing book, file is locked");
+            return false;
+        }
+
         return true;
     }
 
@@ -170,7 +194,12 @@ public class BookService {
         }
 
         logger.info("sucessfully deleted book with isbn: " + isbn);
-        writeToDatabase(books);
+
+        boolean succeedWrite = writeToDatabase(books);
+        if (!succeedWrite) {
+            logger.error("failed writing book, file is locked");
+            return;
+        }
     }
 
 
